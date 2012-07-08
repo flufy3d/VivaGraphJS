@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>VivaGraphs test page</title>
+        <title>ui test page</title>
         <script src="../../dist/vivagraph.js"></script>
         <script src="jquery.min.js"></script>
         <script type='text/javascript'>
@@ -12,7 +12,7 @@
                         var graph = Viva.Graph.graph();
                         $(xml).children().each(function(){
                             var node = $(this);
-                            graph.addNode(node.attr("id"), {url : node.attr("pic")});
+                            graph.addNode(node.attr("id"), {url : node.attr("pic"),width:node.attr("width"),height:node.attr("height")});
                         });
 
                         // Set custom nodes appearance
@@ -20,15 +20,17 @@
                         graphics.node(function(node) {
                                // The function is called every time renderer needs a ui to display node
                                var ret = Viva.Graph.svg('image')
-                                     .attr('width', 64)
-                                     .attr('height', 64)
+                                     .attr('width', (node.data.width === undefined)? 64:node.data.width)
+                                     .attr('height',(node.data.height === undefined)? 64:node.data.height)
                                      .attr('id',node.id)
                                      .link(node.data.url); // node.data holds custom object passed to graph.addNode();
                                return ret;
                             })
                             .placeNode(function(nodeUI, pos){
                                 // Shift image to let links go to the center:
-                                nodeUI.attr('x', pos.x - 32).attr('y', pos.y - 32);                 
+                                var node_width = nodeUI.attributes['width'].nodeValue;
+                                var node_height = nodeUI.attributes['height'].nodeValue;
+                                nodeUI.attr('x', pos.x - node_width/2).attr('y', pos.y - node_height/2);                 
                                 nodeUI.ondblclick = function(event){
                                     var cur_id = nodeUI.attributes['id'].nodeValue;
                                     console.log("dbclick on :"+cur_id);
@@ -40,7 +42,7 @@
                                             console.log("unfold");
                                             node.children().each(function(){
                                                 var node = $(this);
-                                                graph.addNode(node.attr("id"), {url : node.attr("pic")});
+                                                graph.addNode(node.attr("id"), {url : node.attr("pic"),width:node.attr("width"),height:node.attr("height")});
                                                 graph.addLink(cur_id, node.attr("id"));
                                             });
                                         }else{

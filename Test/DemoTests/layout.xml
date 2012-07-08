@@ -1,4 +1,4 @@
-<node id="root" pic="icon/html5icon.png">
+<node id="root" pic="icon/html5icon.png" width="128" height="128">
     <node id="item1" pic="icon/500.png"></node>
     <node id="item2" pic="icon/501.png">
         <node id="item2_1" pic="icon/506.png">

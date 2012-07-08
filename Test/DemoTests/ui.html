@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>VivaGraphs test page</title>
+        <script src="../../dist/vivagraph.js"></script>
+        <script src="jquery.min.js"></script>
+        <script type='text/javascript'>
+            
+            function onLoad() {
+                    
+                    $.get("layout.xml",function(xml){
+                        var graph = Viva.Graph.graph();
+                        $(xml).children().each(function(){
+                            var node = $(this);
+                            graph.addNode(node.attr("id"), {url : node.attr("pic")});
+                        });
+
+                        // Set custom nodes appearance
+                        var graphics = Viva.Graph.View.svgGraphics();
+                        graphics.node(function(node) {
+                               // The function is called every time renderer needs a ui to display node
+                               var ret = Viva.Graph.svg('image')
+                                     .attr('width', 64)
+                                     .attr('height', 64)
+                                     .attr('id',node.id)
+                                     .link(node.data.url); // node.data holds custom object passed to graph.addNode();
+                               return ret;
+                            })
+                            .placeNode(function(nodeUI, pos){
+                                // Shift image to let links go to the center:
+                                nodeUI.attr('x', pos.x - 32).attr('y', pos.y - 32);                 
+                                nodeUI.ondblclick = function(event){
+                                    var cur_id = nodeUI.attributes['id'].nodeValue;
+                                    console.log("dbclick on :"+cur_id);
+                                    $(xml).find("node#"+cur_id).each(function(){
+                                        var node = $(this);
+                                        var viva_node = graph.getNode(cur_id);
+                                        console.dir(viva_node);
+                                        if(viva_node.links.length <= 1){
+                                            console.log("unfold");
+                                            node.children().each(function(){
+                                                var node = $(this);
+                                                graph.addNode(node.attr("id"), {url : node.attr("pic")});
+                                                graph.addLink(cur_id, node.attr("id"));
+                                            });
+                                        }else{
+                                            console.log("fold");
+                                            node.children().each(function(){
+                                                var node = $(this);
+                                                graph.removeNode(node.attr("id"));
+                                            });
+                                        };
+
+
+                                    });
+                                };
+
+                            });
+
+                         var layout = Viva.Graph.Layout.forceDirected(graph, {
+                                springLength : 80,
+                                springCoeff : 0.0002,
+                                dragCoeff : 0.05,
+                                gravity : -5,
+                                theta : 0.5
+                            });
+                            
+                       renderer = Viva.Graph.View.renderer(graph, {
+                           container : document.getElementById('visualization'),
+                           graphics : graphics,
+                           layout :  layout
+                       });
+                       renderer.run();
+                    });
+            }
+            
+        </script>
+    </head>
+    <body onload="onLoad()" style="background-color:#3b3e40">
+    <div id="visualization" style="margin:0 auto;width:100%;height:800px;background-color:#3b3e40">
+    </div>
+        
+    </body>
+</html>

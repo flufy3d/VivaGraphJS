@@ -47,9 +47,9 @@
                                             });
                                         }else{
                                             console.log("fold");
-                                            node.children().each(function(){
-                                                var node = $(this);
-                                                graph.removeNode(node.attr("id"));
+                                            node.find("node").each(function(){
+                                                  var node = $(this);
+                                                  graph.removeNode(node.attr("id"));
                                             });
                                         };
 

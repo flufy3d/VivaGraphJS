@@ -1,20 +1,9 @@
-VivaGraphJS - JavaScript Graph Drawing Library
+VivaGraph [![Build Status](https://travis-ci.org/anvaka/VivaGraphJS.svg)](https://travis-ci.org/anvaka/VivaGraphJS)
 ==================================================
-**VivaGraphJS** is a free [graph drawing](http://en.wikipedia.org/wiki/Graph_drawing) library for JavaScript.
-It is designed to be extensible and to support different rendering engines and layout algorithms. At the moment
-it supports rendering graphs using WebGL, SVG or CSS formats. Layout algorithms currently implemented are:
+**VivaGraphJS** is the fastest graph drawing javascript library ([proof](https://www.youtube.com/watch?v=Ax7KSQZ0_hk)). It is designed to be extensible and to support different
+rendering engines and layout algorithms. Underlying modules can be found via [ngraph](https://www.npmjs.com/search?q=ngraph) query.
 
-* [Force Directed](http://en.wikipedia.org/wiki/Force-based_algorithms_\(graph_drawing\)) - based on Barnes-Hut
-simulation and optimized for JavaScript language this algorithm gives `N * lg(N) + V` performance per iteration. 
-* [ ![PDF download](https://github.com/anvaka/VivaGraphJS/raw/master/packages/Images/pdf-icon.gif) GEM](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.113.9565&rep=rep1&type=pdf) - Graph Embedder
-algorithm created by Arne Frick, Andreas Ludwig and Heiko Mehldau. Estimated compleixity of this algorithm
-is `O(|V|^3)` - though I must have made a mistake somewhere, because force directed algorithm almost
-always produces better results faster. This algorithm is included to demonstrate how
-one can implement a new layout algorithm.
-
-Library provides API which tracks graph changes and reflect changes on the rendering surface
-accordingly.
-
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/anvaka/VivaGraphJS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Enough talking. Show me the demo!
 ----------------------------------------------------
@@ -22,11 +11,11 @@ Some examples of library usage in the real projects:
 
 * [Amazon Visualization](http://www.yasiv.com/amazon#/Search?q=graph%20drawing&category=Books&lang=US) Shows related products on Amazon.com, uses SVG as graph output
 * [YouTube Visualization](http://www.yasiv.com/youtube#/Search?q=write%20in%20c) Shows related videos from YouTube. SVG based.
-* [Facebook Visualization](http://www.yasiv.com/facebook) friendship visualization on Facebook. WebGL based.
 * [Graph Viewer](http://www.yasiv.com/graphs#Bai/rw496) visualization of sparse matrices collection of the University of Florida. WebGL based.
-* [Vkontakte Visualization](http://www.yasiv.com/vk) friendship visualization of the largest social network in Russia [vk.com](vk.com). WebGL based.
+* [Vkontakte Visualization](http://www.yasiv.com/vk) friendship visualization of the largest social network in Russia [vk.com](https://vk.com). WebGL based.
 
-To start using the library include `vivagraph.js` script from the [dist](https://github.com/anvaka/VivaGraphJS/tree/master/dist) folder. The following code is the minimum required to render a graph with two nodes and one edge:
+To start using the library include `vivagraph.js` script from the [dist](https://github.com/anvaka/VivaGraphJS/tree/master/dist)
+folder. The following code is the minimum required to render a graph with two nodes and one edge:
 
 ```javascript
 var graph = Viva.Graph.graph();
@@ -36,12 +25,25 @@ var renderer = Viva.Graph.View.renderer(graph);
 renderer.run();
 ```
 
-This will produce the following layout:
+This will instantiate a graph inside `document.body`:
 
 ![Simple graph](https://github.com/anvaka/VivaGraphJS/raw/master/packages/Images/mingraph.png)
 
-The code above adds a link to the graph between nodes `1` and `2`. Since nodes are not yet in the graph
-they will be created. It's equivalent to 
+If you want to render graph in your own DOM element:
+
+```javascript
+var graph = Viva.Graph.graph();
+graph.addLink(1, 2);
+
+// specify where it should be rendered:
+var renderer = Viva.Graph.View.renderer(graph, {
+  container: document.getElementById('graphDiv')
+});
+renderer.run();
+```
+
+The code above adds a link to the graph between nodes `1` and `2`. Since nodes
+are not yet in the graph they will be created. It's equivalent to
 
 ```javascript
 var graph = Viva.Graph.graph();
@@ -53,25 +55,27 @@ var renderer = Viva.Graph.View.renderer(graph);
 renderer.run();
 ```
 
-
 Customization
 ----------------------------------------------------
-VivaGraphJS is all about customization. You can easily change nodes and links appearance, switch layouting algorithm and medium used to display elements of the graph. For example to use CSS-based rendering (instead of default SVG) the following code is required:
+VivaGraphJS is all about customization. You can easily change the appearance of
+nodes and links. You can also change the layouting algorithm and medium that
+displays elements of the graph. For example: The following code allows you to
+use WebGL-based rendering, instead of the default SVG.
 
 ```javascript
 var graph = Viva.Graph.graph();
 graph.addLink(1, 2);
 
-var graphics = Viva.Graph.View.cssGraphics();
+var graphics = Viva.Graph.View.webglGraphics();
 
-var renderer = Viva.Graph.View.renderer(graph, 
+var renderer = Viva.Graph.View.renderer(graph,
     {
         graphics : graphics
     });
 renderer.run();
 ```
 
-`graphics` class is responsible for rendering nodes and links on the page. And `renderer` orchestrates the process. To change nodes appearance tell `graphics` how to represent them. Here is an example of graph with six people whom I follow at github:
+`graphics` class is responsible for rendering nodes and links on the page. And `renderer` orchestrates the process. To change nodes appearance tell `graphics` how to represent them. Here is an example of graph with six people who I follow at github:
 
 ```javascript
 var graph = Viva.Graph.graph();
@@ -106,7 +110,7 @@ graphics.node(function(node) {
         nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
     });
 
-var renderer = Viva.Graph.View.renderer(graph, 
+var renderer = Viva.Graph.View.renderer(graph,
     {
         graphics : graphics
     });
@@ -120,7 +124,7 @@ The result is:
 
 Tuning layout algorithm
 ----------------------------------------------------
-Graphs vary by their nature. Some graphs has hundreds of nodes and few edges (or links), others connect every node with each other. To get the best layout tuning is usually required.
+Graphs vary by their nature. Some graphs have hundreds of nodes and few edges (or links), some might connect every node with every other. Tuning the physics often helps get the best layout.
 Consider the following example:
 
 ```javascript
@@ -130,11 +134,13 @@ var renderer = Viva.Graph.View.renderer(graph);
 renderer.run();
 ```
 
-Graph generators are part of the library, which can produce classic graphs. `grid` generator creates a grid with given number of columns and rows. But with default parameters the rendering is pretty ugly:
+Graph generators are part of the library, which can produce classic graphs.
+`grid` generator creates a grid with given number of columns and rows. But with
+default parameters the rendering is pretty ugly:
 
 ![Grid 3x3 bad](https://github.com/anvaka/VivaGraphJS/raw/master/packages/Images/gridBad.png)
 
-Let's tweak original code:
+Let's tweak the original code:
 
 ```javascript
 var graphGenerator = Viva.Graph.generator();
@@ -153,21 +159,60 @@ var renderer = Viva.Graph.View.renderer(graph, {
 renderer.run();
 ```
 
-Now result is much better:
+Now the result is much better:
 
 ![Grid 3x3](https://github.com/anvaka/VivaGraphJS/raw/master/packages/Images/gridGood.png)
 
-Tuning layout algorithm is definitely one of the hardest part of using this library. It has to be improved in future to simplify usage. Each of the force directed algorithm parameters are described in the source code.
+Tuning layout algorithm is definitely one of the hardest part of using this library.
+It has to be improved in future to simplify usage. Each of the force directed
+algorithm parameters are described in the source code.
 
-`TODO: Add more examples and library API to wiki`
+Design philosophy/roadmap
+-------------------------
+
+Until version 0.7.x VivaGraph was a single monolithic code base. Starting from
+0.7.x the library is bundled from small npm modules into `Viva` namespace.
+All these modules are part of a larger [ngraph](https://github.com/anvaka/ngraph)
+family. `ngraph` modules support rendering graphs into images, 3D rendering,
+integration with [gephi](https://gephi.org/), pagerank calculation and many more.
+
+Version 0.7 is a compromise between maximum backward compatibility and ngraph
+flexibility. Eventually I hope to further simplify API and provide interface
+for custom builds.
+
+Upgrade guide
+-------------
+
+Please refer the [upgrade guide](https://github.com/anvaka/VivaGraphJS/blob/master/docs/upgrade_guide.md) to see how to update older versions of the library to the latest one.
+
+Local Build
+-----------
+Run the following script:
+```
+git clone https://github.com/anvaka/VivaGraphJS.git
+cd ./VivaGraphJS
+npm install
+gulp release
+```
+The combined/minified code should be stored in ```dist``` folder.
+
+Looking for alternatives?
+-------------------------
+
+I'm trying to put up a list of all known graph drawing libraries.
+Please [find it here](http://anvaka.github.io/graph-drawing-libraries/#/all)
 
 I need your feedback
 ----------------------------------------------------
-Disclaimer: I wrote this library to learn JavaScript. By no means I pretend to be an expert in the language and choosen approach to design may not be the optimal. I would love to hear your feedback and suggestions. 
+Disclaimer: I wrote this library to learn JavaScript. By no means I pretend to
+be an expert in the language and chosen approach to design may not be the optimal.
+I would love to hear your feedback and suggestions.
 
-Though I implemented this library from scratch, I went through many existing libraries to pick the best (at my view) out of them. If you are evaluating libraries for your project make sure to check them out as well:
+Though I implemented this library from scratch, I went through many existing
+libraries to pick the best (at my view) out of them. If you are evaluating libraries
+for your project make sure to [check them out](http://anvaka.github.io/graph-drawing-libraries/#/all)
+as well.
 
-* [Dracula Graph Library](https://github.com/strathausen/dracula) - written by [Johann Philipp Strathausen](https://github.com/strathausen) and uses [Raphaël](http://raphaeljs.com/) library to render graphs. Has very simple API.
-* [D3](http://mbostock.github.com/d3/ex/force.html) - one of the best data visualization library in JavaScript world. From [Mike Bostock](https://github.com/mbostock).
-
-My goal is to create highly performant javascript library which serves in the field of graph drawing. To certain extent I ahcieved it. But I have no doubt there is much more to improve here.
+My goal is to create highly performant javascript library, which serves in the
+field of graph drawing. To certain extent I achieved it. But I have no doubt
+there is much more to improve here.
